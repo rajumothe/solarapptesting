@@ -1,0 +1,46 @@
+{
+  "name": "solarapp-web",
+  "private": true,
+  "version": "0.0.0",
+  "type": "module",
+  "scripts": {
+    "dev": "vite",
+    "build": "vite build",
+    "lint": "eslint .",
+    "preview": "vite preview",
+    "test": "vitest",
+    "test:coverage": "vitest --coverage"
+  },
+  "dependencies": {
+    "@reduxjs/toolkit": "^1.9.7",
+    "@tanstack/react-query": "^5.28.0",
+    "axios": "^1.18.1",
+    "chart.js": "^4.4.0",
+    "date-fns": "^2.30.0",
+    "react": "^19.2.7",
+    "react-chartjs-2": "^5.2.0",
+    "react-dom": "^19.2.7",
+    "react-redux": "^8.1.3",
+    "react-router-dom": "^7.18.0",
+    "redux": "^4.2.1",
+    "zod": "^3.22.4",
+    "@sentry/react": "^7.84.0",
+    "@sentry/tracing": "^7.84.0"
+  },
+  "devDependencies": {
+    "@eslint/js": "^10.0.1",
+    "@testing-library/jest-dom": "^6.1.5",
+    "@testing-library/react": "^14.1.2",
+    "@testing-library/user-event": "^14.5.1",
+    "@types/react": "^19.2.17",
+    "@types/react-dom": "^19.2.3",
+    "@vitejs/plugin-react": "^6.0.2",
+    "@vitest/ui": "^1.0.4",
+    "eslint": "^10.5.0",
+    "eslint-plugin-react-hooks": "^7.1.1",
+    "eslint-plugin-react-refresh": "^0.5.3",
+    "globals": "^17.6.0",
+    "vite": "^8.1.0",
+    "vitest": "^1.0.4"
+  }
+}

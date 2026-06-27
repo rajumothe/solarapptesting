@@ -1,0 +1,133 @@
+version: '3.8'
+
+services:
+  # MySQL Database
+  mysql:
+    image: mysql:8.0
+    container_name: solarapp-mysql
+    environment:
+      MYSQL_ROOT_PASSWORD: ${DB_ROOT_PASSWORD:-root123}
+      MYSQL_DATABASE: ${DB_NAME:-solar_app}
+      MYSQL_USER: ${DB_USER:-solar_user}
+      MYSQL_PASSWORD: ${DB_PASSWORD:-solar_pass123}
+    ports:
+      - "3306:3306"
+    volumes:
+      - mysql_data:/var/lib/mysql
+      - ./init.sql:/docker-entrypoint-initdb.d/init.sql
+    networks:
+      - solarapp-network
+    healthcheck:
+      test: ["CMD", "mysqladmin", "ping", "-h", "localhost"]
+      timeout: 20s
+      retries: 10
+    restart: unless-stopped
+
+  # Redis Cache
+  redis:
+    image: redis:7-alpine
+    container_name: solarapp-redis
+    ports:
+      - "6379:6379"
+    volumes:
+      - redis_data:/data
+    networks:
+      - solarapp-network
+    healthcheck:
+      test: ["CMD", "redis-cli", "ping"]
+      timeout: 3s
+      retries: 5
+    restart: unless-stopped
+
+  # Backend API
+  backend:
+    build:
+      context: ./solarapp-backend
+      dockerfile: Dockerfile
+    container_name: solarapp-backend
+    environment:
+      NODE_ENV: ${NODE_ENV:-development}
+      PORT: 5000
+      DB_HOST: mysql
+      DB_PORT: 3306
+      DB_NAME: ${DB_NAME:-solar_app}
+      DB_USER: ${DB_USER:-solar_user}
+      DB_PASSWORD: ${DB_PASSWORD:-solar_pass123}
+      JWT_SECRET: ${JWT_SECRET:-super-secret-key-change-in-production}
+      REDIS_HOST: redis
+      REDIS_PORT: 6379
+      ALLOWED_ORIGINS: http://localhost:3000,http://localhost:5173
+      API_URL: http://localhost:5000/api
+      WEB_URL: http://localhost:3000
+    ports:
+      - "5000:5000"
+    depends_on:
+      mysql:
+        condition: service_healthy
+      redis:
+        condition: service_healthy
+    volumes:
+      - ./solarapp-backend:/app
+      - /app/node_modules
+      - uploads:/app/uploads
+    networks:
+      - solarapp-network
+    restart: unless-stopped
+
+  # Frontend (Web)
+  frontend:
+    build:
+      context: ./solarapp-web
+      dockerfile: Dockerfile
+    container_name: solarapp-web
+    environment:
+      VITE_API_URL: http://localhost:5000/api
+      NODE_ENV: development
+    ports:
+      - "3000:5173"
+    volumes:
+      - ./solarapp-web:/app
+      - /app/node_modules
+    networks:
+      - solarapp-network
+    restart: unless-stopped
+
+  # phpMyAdmin (Database Management)
+  phpmyadmin:
+    image: phpmyadmin:latest
+    container_name: solarapp-phpmyadmin
+    environment:
+      PMA_HOST: mysql
+      PMA_USER: ${DB_USER:-solar_user}
+      PMA_PASSWORD: ${DB_PASSWORD:-solar_pass123}
+      PMA_ROOT_PASSWORD: ${DB_ROOT_PASSWORD:-root123}
+    ports:
+      - "8080:80"
+    depends_on:
+      - mysql
+    networks:
+      - solarapp-network
+    restart: unless-stopped
+
+  # Redis Commander (Cache Management)
+  redis-commander:
+    image: rediscommander/redis-commander:latest
+    container_name: solarapp-redis-commander
+    environment:
+      REDIS_HOSTS: local:redis:6379
+    ports:
+      - "8081:8081"
+    depends_on:
+      - redis
+    networks:
+      - solarapp-network
+    restart: unless-stopped
+
+volumes:
+  mysql_data:
+  redis_data:
+  uploads:
+
+networks:
+  solarapp-network:
+    driver: bridge
