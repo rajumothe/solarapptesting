@@ -2,6 +2,7 @@ services:
   - type: web
     name: solarapp-backend
     env: node
+    plan: free
     rootDir: solarapp-backend
     buildCommand: npm install
     startCommand: npm start
@@ -33,6 +34,7 @@ services:
   - type: web
     name: solarapp-web
     env: static
+    plan: free
     rootDir: solarapp-web
     buildCommand: npm install && npm run build
     staticPublishPath: dist
